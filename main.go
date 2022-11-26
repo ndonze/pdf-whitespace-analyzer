@@ -85,7 +85,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	fmt.Println("Name,White Pixels,Non-WhitePixels,Percentage White Pixels")
+	fmt.Println("Name,White Pixels,Non-White Pixels,Percentage White Pixels")
 
 	for _, stats := range allStats {
 		fmt.Printf("%s,%d,%d,%f\n",
