@@ -51,7 +51,7 @@ func main() {
 	})
 
 	tempDir, err := os.MkdirTemp(
-		os.TempDir(), "pdf-analyzer")
+		os.TempDir(), "pdf-whitespace-analyzer")
 	if err != nil {
 		exitWithError(fmt.Errorf("unable to create temp directory for converting PDFs to images: %w", err))
 	}

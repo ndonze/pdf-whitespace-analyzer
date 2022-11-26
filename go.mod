@@ -1,4 +1,4 @@
-module pdf-analyzer
+module pdf-whitespace-analyzer
 
 go 1.19
 
