@@ -4,8 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"image"
-	"image/jpeg"
 	"log"
 	"os"
 	"path/filepath"
@@ -50,21 +48,10 @@ func main() {
 		return err
 	})
 
-	tempDir, err := os.MkdirTemp(
-		os.TempDir(), "pdf-whitespace-analyzer")
-	if err != nil {
-		exitWithError(fmt.Errorf("unable to create temp directory for converting PDFs to images: %w", err))
-	}
-	defer func() {
-		if err := os.RemoveAll(tempDir); err != nil {
-			exitWithError(fmt.Errorf("error removing temp directory used to convert PDFs to images: %w", err))
-		}
-	}()
-
 	for i := 0; i < *concurrency; i++ {
 		g.Go(func() error {
 			for path := range pdfFilePaths {
-				localStats, err := processPdf(tempDir, path)
+				localStats, err := processPdf(path)
 				if err != nil {
 					return fmt.Errorf("error processing PDF %s: %w", path, err)
 				}
@@ -117,7 +104,7 @@ func forEachPdf(source string, action func(string)) error {
 	return nil
 }
 
-func processPdf(tempDir string, path string) (*pdfStats, error) {
+func processPdf(path string) (*pdfStats, error) {
 	doc, err := fitz.New(path)
 	if err != nil {
 		return nil, err
@@ -125,7 +112,6 @@ func processPdf(tempDir string, path string) (*pdfStats, error) {
 
 	defer doc.Close()
 
-	opts := &jpeg.Options{Quality: jpeg.DefaultQuality}
 	var whitePixels int64
 	var nonWhitePixels int64
 	name := filepath.Base(path)
@@ -136,36 +122,16 @@ func processPdf(tempDir string, path string) (*pdfStats, error) {
 			return nil, err
 		}
 
-		f, err := os.Create(filepath.Join(tempDir, fmt.Sprintf("%s-%03d.jpeg", name, n)))
-		if err != nil {
-			return nil, err
-		}
+		width := img.Bounds().Max.X
+		height := img.Bounds().Max.Y
 
-		defer f.Close()
-
-		err = jpeg.Encode(f, img, opts)
-		if err != nil {
-			return nil, err
-		}
-
-		f.Seek(0, 0)
-		cfg, _, err := image.DecodeConfig(f)
-		if err != nil {
-			return nil, err
-		}
-
-		width := cfg.Width
-		height := cfg.Height
-
-		f.Seek(0, 0)
-		decoded, _, err := image.Decode(f)
 		if err != nil {
 			return nil, err
 		}
 
 		for y := 0; y < height; y++ {
 			for x := 0; x < width; x++ {
-				r, g, b, a := decoded.At(x, y).RGBA()
+				r, g, b, a := img.At(x, y).RGBA()
 				if isWhite(r, g, b, a) {
 					whitePixels++
 				} else {

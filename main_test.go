@@ -1,22 +1,12 @@
 package main
 
 import (
-	"os"
 	"testing"
 )
 
 func TestPercentageWhitespace(t *testing.T) {
-	tempDir, err := os.MkdirTemp(os.TempDir(), "pdf-whitespace-analyzer-tests")
-	if err != nil {
-		t.Log(err)
-		t.FailNow()
-	}
-	defer func() {
-		os.RemoveAll(tempDir)
-	}()
-
 	t.Run("single page, 100% white pixels", func(t *testing.T) {
-		stats, err := processPdf(tempDir, "./test_candidates/100w_0nw_1p.pdf")
+		stats, err := processPdf("./test_candidates/100w_0nw_1p.pdf")
 		if err != nil {
 			t.Log(err)
 			t.Fail()
@@ -29,7 +19,7 @@ func TestPercentageWhitespace(t *testing.T) {
 	})
 
 	t.Run("single page, 50% white pixels, 50% non-white pixels", func(t *testing.T) {
-		stats, err := processPdf(tempDir, "./test_candidates/50w_50nw_1p.pdf")
+		stats, err := processPdf("./test_candidates/50w_50nw_1p.pdf")
 		if err != nil {
 			t.Log(err)
 			t.Fail()
@@ -42,7 +32,7 @@ func TestPercentageWhitespace(t *testing.T) {
 	})
 
 	t.Run("multiple pages, 75% white pixels, 25% non-white pixels", func(t *testing.T) {
-		stats, err := processPdf(tempDir, "./test_candidates/75w_25nw_2p.pdf")
+		stats, err := processPdf("./test_candidates/75w_25nw_2p.pdf")
 		if err != nil {
 			t.Log(err)
 			t.Fail()
